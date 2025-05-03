@@ -9,6 +9,7 @@ TagManager:
   - Obstacle
   - Ladder
   - Ground
+  - Chaser
   layers:
   - Default
   - TransparentFX
