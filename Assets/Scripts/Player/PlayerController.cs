@@ -7,7 +7,7 @@ public class PlayerController : MonoBehaviour
     private float jumpForce;
 
     private int jumpCount = 0;
-    public int maxJumps = 2; // 1 means max 2 jumps total
+    public int maxJumps = 2;
 
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -17,17 +17,20 @@ public class PlayerController : MonoBehaviour
     public Transform groundCheck;
     public float groundCheckRadius = 0.1f;
 
+    private float moveInput = 0f;
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-
-        // Calculate jump force using physics formula
         jumpForce = Mathf.Sqrt(2f * jumpHeight * -Physics2D.gravity.y * rb.gravityScale);
     }
 
     void Update()
     {
-        // Handle input in Update
+        // Get left/right input (-1, 0, or 1)
+        moveInput = Input.GetAxisRaw("Horizontal"); // A/D or Left/Right arrows
+
+        // Handle jump input
         if (Input.GetButtonDown("Jump") && jumpCount < maxJumps)
         {
             shouldJump = true;
@@ -36,19 +39,17 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
-        // Constant movement to the right
-        rb.linearVelocity = new Vector2(moveSpeed, rb.linearVelocity.y);
+        // Move horizontally based on input
+        rb.linearVelocity = new Vector2(moveInput * moveSpeed, rb.linearVelocity.y);
 
         // Ground check
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, groundCheckRadius, groundLayer);
 
-        // Reset jump count when grounded
         if (isGrounded)
         {
             jumpCount = 0;
         }
 
-        // Apply jump in FixedUpdate
         if (shouldJump)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);

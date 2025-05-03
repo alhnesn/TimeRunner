@@ -35,7 +35,7 @@ public class LadderClimb : MonoBehaviour
         if (other.CompareTag("Ladder"))
         {
             isClimbing = false;
-            rb.gravityScale = 2f; // Reset gravity after leaving ladder
+            rb.gravityScale = 1f; // Reset gravity after leaving ladder
         }
     }
 }
