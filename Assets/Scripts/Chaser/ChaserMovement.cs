@@ -1,6 +1,6 @@
 using UnityEngine;
 
-public class Chaser : MonoBehaviour
+public class ChaserMovement : MonoBehaviour
 {
     public float moveSpeed = 4f;
     public float jumpHeight = 1.5f; // Desired jump height in meters
