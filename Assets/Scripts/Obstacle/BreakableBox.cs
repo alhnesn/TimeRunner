@@ -20,7 +20,7 @@ public class BreakableBox : MonoBehaviour
     void Update()
     {
         // D tuşuna basıldığında kutu yok olacak
-        if (isTouchingPlayer && Input.GetKeyDown(KeyCode.D))
+        if (isTouchingPlayer && Input.GetKeyDown(KeyCode.E))
         {
             Destroy(gameObject);
         }
