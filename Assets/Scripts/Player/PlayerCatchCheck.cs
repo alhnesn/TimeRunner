@@ -4,11 +4,13 @@ public class PlayerCatchCheck : MonoBehaviour
 {
     public GameObject chaser;
     public GameManager gameManager;
+    private bool isGameOverTriggered = false;
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    void Update()
     {
-        if (collision.collider.CompareTag("Enemy"))
+        if (!isGameOverTriggered && chaser.transform.position.x >= transform.position.x)
         {
+            isGameOverTriggered = true;
             gameManager.GameOver();
         }
     }

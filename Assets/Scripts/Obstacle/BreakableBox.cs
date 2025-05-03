@@ -11,6 +11,10 @@ public class BreakableBox : MonoBehaviour
         {
             isTouchingPlayer = true;
         }
+        else if (collision.collider.CompareTag("Chaser"))
+        {
+            Destroy(gameObject);
+        }
     }
 
     void Update()
