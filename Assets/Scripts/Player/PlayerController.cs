@@ -75,21 +75,8 @@ public class PlayerController : MonoBehaviour
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
-        if (rb == null)
-        {
-            Debug.LogError("Rigidbody2D missing, adding one.");
-            rb = gameObject.AddComponent<Rigidbody2D>();
-            rb.freezeRotation = true;
-        }
-
         gravityScale = rb.gravityScale;
         jumpForce = CalculateJumpForce();
-
-        if (groundCheck == null)
-        {
-            Debug.LogError("GroundCheck not assigned, defaulting to transform.");
-            groundCheck = transform;
-        }
 
         jumpCount = 0;
         coyoteTimeCounter = 0f;
@@ -161,17 +148,14 @@ public class PlayerController : MonoBehaviour
         bool canFirst = (isGrounded || coyoteTimeCounter > 0f) && jumpCount < 1;
         bool canSecond = !isGrounded && jumpCount > 0 && jumpCount < maxJumps;
 
-        if (jumpBufferCounter > 0f)
+        if (jumpBufferCounter > 0f && (canFirst || canSecond))
         {
-            if (canFirst || canSecond)
-            {
-                PerformJump();
-                jumpBufferCounter = 0f;
-            }
+            PerformJump();
+            jumpBufferCounter = 0f;
         }
     }
 
-    private void PerformJump()
+    private void PerformJump() // bunu FixedUpdate'e koymak daha mantikli olabilir ama if it aint broken dont fix it
     {
         float force = (jumpCount == 0) ? jumpForce : jumpForce * 0.85f;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, force);
@@ -191,9 +175,20 @@ public class PlayerController : MonoBehaviour
 
     private void HandleCoyoteTime()
     {
-        if (wasGrounded && !isGrounded) coyoteTimeCounter = coyoteTime;
-        else if (isGrounded) coyoteTimeCounter = coyoteTime;
-        else coyoteTimeCounter -= Time.deltaTime;
+        if (wasGrounded && !isGrounded)
+            coyoteTimeCounter = coyoteTime;
+        else if (isGrounded)
+            coyoteTimeCounter = coyoteTime;
+        else
+            coyoteTimeCounter -= Time.deltaTime;
+
+        // After coyote expires on a fall, consume first jump
+        if (!isGrounded && coyoteTimeCounter <= 0f && jumpCount == 0)
+        {
+            jumpCount = 1;
+            if (showDebugLogs)
+                Debug.Log("Coyote ended: granting one air jump (as if first jump used).");
+        }
     }
 
     private void ApplyVariableJumpCut()
@@ -222,13 +217,18 @@ public class PlayerController : MonoBehaviour
         else
         {
             accelRate = (Mathf.Abs(targetSpeed) > 0.01f) ? airAcceleration : airDeceleration;
-            if (Mathf.Sign(targetSpeed) != Mathf.Sign(rb.linearVelocity.x)) accelRate *= airControl;
+            if (Mathf.Sign(targetSpeed) != Mathf.Sign(rb.linearVelocity.x))
+                accelRate *= airControl;
         }
 
         rb.AddForce(Vector2.right * speedDiff * accelRate, ForceMode2D.Force);
         if (Mathf.Abs(rb.linearVelocity.x) > moveSpeed)
             rb.linearVelocity = new Vector2(Mathf.Sign(rb.linearVelocity.x) * moveSpeed, rb.linearVelocity.y);
     }
+
+    #endregion
+
+    #region Fast Fall & Gravity
 
     private void HandleFastFall()
     {
@@ -244,14 +244,15 @@ public class PlayerController : MonoBehaviour
         float gravityMul = 1f;
         if (rb.linearVelocity.y < 0f)
             gravityMul = isFastFalling ? fastFallMultiplier : fallMultiplier;
-        else if (rb.linearVelocity.y > 0f && !Input.GetButton("Jump")) gravityMul = fallMultiplier;
+        else if (rb.linearVelocity.y > 0f && !Input.GetButton("Jump"))
+            gravityMul = fallMultiplier;
 
         rb.gravityScale = gravityScale * gravityMul;
     }
 
     #endregion
 
-    #region Ground Detection
+    #region Ground Detection & Utilities
 
     private void CheckGrounded()
     {
@@ -262,26 +263,15 @@ public class PlayerController : MonoBehaviour
         {
             jumpCount = 0;
             isJumping = false;
-            if (showDebugLogs) Debug.Log("Landed, jumpCount reset");
+            if (showDebugLogs)
+                Debug.Log("Landed, jumpCount reset");
         }
 
         if (isGrounded != wasGrounded && !isGrounded && !isJumping && showDebugLogs)
             Debug.Log("Walking off edge, coyote started");
     }
 
-    #endregion
-
-    #region Utilities
-
     private float CalculateJumpForce() => Mathf.Sqrt(2f * Mathf.Abs(Physics2D.gravity.y) * rb.gravityScale * jumpHeight);
 
     #endregion
 }
-
-
-/*
-   * Potential Problem Points:
-   * - Ground check radius may cause flicker when brushing edges.
-   * - Input buffering reset on ButtonUp may clear buffer prematurely.
-   * - Orphaned HandleJump removed to prevent undefined reference.
-*/
