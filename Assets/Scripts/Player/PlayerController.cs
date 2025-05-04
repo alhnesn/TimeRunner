@@ -63,7 +63,8 @@ public class PlayerController : MonoBehaviour
     private int jumpCount;
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
-    private bool hasReleasedJumpButton = true;
+    private bool jumpRequested = false;
+    // private bool hasReleasedJumpButton = true;
 
     private enum LastInput { None, Jump, FastFall }
     private LastInput lastInput = LastInput.None;
@@ -82,7 +83,7 @@ public class PlayerController : MonoBehaviour
         coyoteTimeCounter = 0f;
         jumpBufferCounter = 0f;
         isJumping = false;
-        hasReleasedJumpButton = true;
+        // hasReleasedJumpButton = true;
 
         if (showDebugLogs)
             Debug.Log($"Jump Force: {jumpForce}");
@@ -101,6 +102,11 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (jumpRequested)
+        {
+            PerformJump();
+            jumpRequested = false;
+        }
         HandleMovement();
         HandleFastFall();
         ApplyGravityModifiers();
@@ -125,11 +131,11 @@ public class PlayerController : MonoBehaviour
         {
             lastInput = LastInput.Jump;
             jumpBufferCounter = jumpBufferTime;
-            hasReleasedJumpButton = false;
+            // hasReleasedJumpButton = false;
         }
         if (Input.GetButtonUp("Jump"))
         {
-            hasReleasedJumpButton = true;
+            // hasReleasedJumpButton = true;
             jumpBufferCounter = 0f;
         }
 
@@ -150,12 +156,13 @@ public class PlayerController : MonoBehaviour
 
         if (jumpBufferCounter > 0f && (canFirst || canSecond))
         {
-            PerformJump();
+            // PerformJump();
+            jumpRequested = true;
             jumpBufferCounter = 0f;
         }
     }
 
-    private void PerformJump() // bunu FixedUpdate'e koymak daha mantikli olabilir ama if it aint broken dont fix it
+    private void PerformJump()
     {
         float force = (jumpCount == 0) ? jumpForce : jumpForce * 0.85f;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, force);
