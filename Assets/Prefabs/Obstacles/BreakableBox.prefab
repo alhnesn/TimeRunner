@@ -12,8 +12,8 @@ GameObject:
   - component: {fileID: 7755481217811843236}
   - component: {fileID: 1325739969850013323}
   - component: {fileID: 2033456523833463908}
-  - component: {fileID: 8419719328319028256}
-  m_Layer: 0
+  - component: {fileID: 339670961348126027}
+  m_Layer: 6
   m_Name: BreakableBox
   m_TagString: Box
   m_Icon: {fileID: 0}
@@ -124,7 +124,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0, y: 0}
+  m_Offset: {x: 0.00000023841858, y: -0.020930052}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -134,7 +134,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.9162793, y: 0.72372305}
   m_EdgeRadius: 0
 --- !u!50 &2033456523833463908
 Rigidbody2D:
@@ -163,7 +163,7 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 7
---- !u!114 &8419719328319028256
+--- !u!114 &339670961348126027
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -172,6 +172,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 8299581712401255479}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: e24794ccb8d2e43448f2b78c80a59146, type: 3}
+  m_Script: {fileID: 11500000, guid: 63b6fc9fdf92a644ebaebfaf7c764a34, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

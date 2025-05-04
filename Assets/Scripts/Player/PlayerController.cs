@@ -64,6 +64,8 @@ public class PlayerController : MonoBehaviour
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
     private bool jumpRequested = false;
+    private bool isFacingRight = true;
+
     // private bool hasReleasedJumpButton = true;
 
     private enum LastInput { None, Jump, FastFall }
@@ -231,7 +233,24 @@ public class PlayerController : MonoBehaviour
         rb.AddForce(Vector2.right * speedDiff * accelRate, ForceMode2D.Force);
         if (Mathf.Abs(rb.linearVelocity.x) > moveSpeed)
             rb.linearVelocity = new Vector2(Mathf.Sign(rb.linearVelocity.x) * moveSpeed, rb.linearVelocity.y);
+
+        // Flip character based on direction
+        if (moveDirection.x > 0 && !isFacingRight)
+            Flip();
+        else if (moveDirection.x < 0 && isFacingRight)
+            Flip();
     }
+
+    private void Flip()
+    {
+        isFacingRight = !isFacingRight;
+
+        // Multiply the X scale by -1 to mirror the sprite
+        Vector3 scale = transform.localScale;
+        scale.x *= -1;
+        transform.localScale = scale;
+    }
+
 
     #endregion
 

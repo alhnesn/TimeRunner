@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 3023846046197001560}
   - component: {fileID: 7853360866161228715}
   - component: {fileID: 5748892352148291566}
+  - component: {fileID: 1248094337956295569}
   m_Layer: 8
   m_Name: Player
   m_TagString: Player
@@ -218,6 +219,29 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   climbSpeed: 3
+  inClimbZone: 0
+  isClimbing: 0
+  ladderContactCount: 0
+  verticalInput: 0
+  horizontalInput: 0
+--- !u!114 &1248094337956295569
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2079458645398850712}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d46554d6558066142bf1e168126050b9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  breakDistance: 1.5
+  breakBoxSize: {x: 1, y: 1.5}
+  breakKey: 101
+  breakableLayer:
+    serializedVersion: 2
+    m_Bits: 0
 --- !u!1 &3190608168674120761
 GameObject:
   m_ObjectHideFlags: 0
