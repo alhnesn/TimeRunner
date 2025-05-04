@@ -1538,9 +1538,9 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
+  - {fileID: 4724420247662620501}
   - {fileID: 8709658393951464466}
   - {fileID: 7426096164673177404}
-  - {fileID: 4724420247662620501}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &8194872596151643568
@@ -1660,6 +1660,10 @@ PrefabInstance:
       propertyPath: m_Sprite
       value: 
       objectReference: {fileID: 931322676729430956, guid: 8f0a49b7161a81a4d84a2a57a6f60b90, type: 3}
+    - target: {fileID: 8503610820502922676, guid: 9cb74401c1eda0041a77937e2ab38343, type: 3}
+      propertyPath: m_SortingOrder
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 8711200440465085263, guid: 9cb74401c1eda0041a77937e2ab38343, type: 3}
       propertyPath: m_Enabled
       value: 0
