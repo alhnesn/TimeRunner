@@ -1,6 +1,7 @@
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviour, IRewindable
 {
     #region Inspector Fields
 
@@ -73,6 +74,94 @@ public class PlayerController : MonoBehaviour
 
     #endregion
 
+    struct State
+    {
+        public float time;
+        public Vector2 position;
+        public Vector2 velocity;
+        public int jumpCount;
+        public float coyoteTimeCounter;
+        public bool isFastFalling;
+
+        public Vector2 moveDirection;
+        public bool isJumping;
+        public bool jumpRequested;
+        public bool isFacingRight;
+        public LastInput lastInput;
+        // add any other flags you need (e.g. isJumping)
+    }
+
+    List<State> history = new List<State>();
+
+    void OnEnable()
+    {
+        RewindManager.I.Register(this);
+    }
+
+    void OnDisable()
+    {
+        RewindManager.I.Unregister(this);
+    }
+
+    // Called by RewindManager on each FixedUpdate
+    public void RecordState(float t)
+    {
+        history.Add(new State
+        {
+            time = t,
+            position = rb.position,
+            velocity = rb.linearVelocity,
+            jumpCount = jumpCount,
+            coyoteTimeCounter = coyoteTimeCounter,
+            isFastFalling = isFastFalling,
+
+            moveDirection = moveDirection,
+            isJumping = isJumping,
+            jumpRequested = jumpRequested,
+            isFacingRight = isFacingRight,
+            lastInput = lastInput
+        });
+
+        // toss out old entries
+        float buf = RewindManager.I.bufferDuration;
+        while (history.Count > 0 && t - history[0].time > buf)
+            history.RemoveAt(0);
+    }
+
+    // Called by RewindManager when rewinding
+    public void RestoreState(float t)
+    {
+        // find newest state ≤ t
+        for (int i = history.Count - 1; i >= 0; i--)
+        {
+            if (history[i].time <= t)
+            {
+                var s = history[i];
+                rb.position = s.position;
+                rb.linearVelocity = s.velocity;
+                jumpCount = s.jumpCount;
+                coyoteTimeCounter = s.coyoteTimeCounter;
+                isFastFalling = s.isFastFalling;
+
+                moveDirection = s.moveDirection;
+                isJumping = s.isJumping;
+                jumpRequested = s.jumpRequested;
+                isFacingRight = s.isFacingRight;
+                lastInput = s.lastInput;
+
+                // restore sprite flip
+                transform.localScale = new Vector3(
+                    Mathf.Abs(transform.localScale.x) * (s.isFacingRight ? +1 : -1),
+                    transform.localScale.y,
+                    transform.localScale.z
+                );
+
+                // restore any other flags here…
+                return;
+            }
+        }
+    }
+
     #region Unity Callbacks
 
     private void Start()
@@ -93,6 +182,15 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
+        // 1) allow R to start/stop rewind
+        if (Input.GetKeyDown(KeyCode.R)) RewindManager.I.StartRewind();
+        if (Input.GetKeyUp(KeyCode.R)) RewindManager.I.StopRewind();
+
+        // 2) if we’re in rewind, don’t do any of the normal gameplay logic
+        if (RewindManager.I.IsRewinding)
+            return;
+
+
         GatherInput();
         CheckGrounded();
         HandleCoyoteTime();
@@ -104,6 +202,10 @@ public class PlayerController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // if rewinding, don’t overwrite restored state
+        if (RewindManager.I.IsRewinding)
+            return;
+
         if (jumpRequested)
         {
             PerformJump();

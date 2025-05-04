@@ -1,4 +1,4 @@
-//using UnityEngine;
+﻿//using UnityEngine;
 
 //public class ChaserMovement : MonoBehaviour
 //{
@@ -43,41 +43,102 @@
 //}
 
 
+using System.Collections.Generic;
 using UnityEngine;
 
-public class ChaserMovement : MonoBehaviour
+public class ChaserMovement : MonoBehaviour, IRewindable
 {
+    [Header("Chase Settings")]
     [Tooltip("Target to chase (the player)")]
     public Transform target;
-
     [Tooltip("Movement speed")]
     public float speed = 4f;
-
     [Tooltip("Whether to chase in X axis only (useful for side-scrollers)")]
     public bool horizontalOnly = false;
-
     [Tooltip("Maximum distance allowed between chaser and target")]
     public float maxDistance = 10f;
 
+    // ─────────── Rewindable State ───────────
+    struct State
+    {
+        public float time;
+        public Vector3 position;
+    }
+    private List<State> history = new List<State>();
+
+    void OnEnable()
+    {
+        RewindManager.I.Register(this);
+    }
+
+    void OnDisable()
+    {
+        RewindManager.I.Unregister(this);
+    }
+
+    /// <summary>
+    /// Called by RewindManager every FixedUpdate during normal play.
+    /// </summary>
+    public void RecordState(float t)
+    {
+        history.Add(new State
+        {
+            time = t,
+            position = transform.position
+        });
+
+        // Trim entries older than the global bufferDuration
+        float buf = RewindManager.I.bufferDuration;
+        while (history.Count > 0 && t - history[0].time > buf)
+            history.RemoveAt(0);
+    }
+
+    /// <summary>
+    /// Called by RewindManager every FixedUpdate during rewind.
+    /// Restores the chaser’s position to what it was at time t.
+    /// </summary>
+    public void RestoreState(float t)
+    {
+        // Find the latest recorded state at or before t
+        for (int i = history.Count - 1; i >= 0; i--)
+        {
+            if (history[i].time <= t)
+            {
+                transform.position = history[i].position;
+                return;
+            }
+        }
+        // If no history exists (e.g. rewound to t=0), you might choose to do nothing
+    }
+
     void Update()
     {
-        if (target == null) return;
+        // Don’t run normal chase logic while rewinding
+        if (RewindManager.I.IsRewinding)
+            return;
 
-        Vector3 targetPosition = target.position;
+        if (target == null)
+            return;
 
+        // Compute desired target position
+        Vector3 targetPos = target.position;
         if (horizontalOnly)
-            targetPosition = new Vector3(target.position.x, transform.position.y, transform.position.z);
+            targetPos = new Vector3(target.position.x, transform.position.y, transform.position.z);
 
         // Enforce max distance
-        float distance = Vector3.Distance(transform.position, targetPosition);
-        if (distance > maxDistance)
+        float dist = Vector3.Distance(transform.position, targetPos);
+        if (dist > maxDistance)
         {
-            // Snap closer (you can lerp instead of teleport if preferred)
-            Vector3 direction = (targetPosition - transform.position).normalized;
-            transform.position = targetPosition - direction * maxDistance;
+            Vector3 dir = (targetPos - transform.position).normalized;
+            transform.position = targetPos - dir * maxDistance;
         }
 
-        // Move toward target
-        transform.position = Vector3.MoveTowards(transform.position, targetPosition, speed * Time.deltaTime);
+        // Move toward the (possibly clamped) target
+        transform.position = Vector3.MoveTowards(
+            transform.position,
+            targetPos,
+            speed * Time.deltaTime
+        );
     }
 }
+

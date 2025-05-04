@@ -1,4 +1,4 @@
-using UnityEngine;
+﻿using UnityEngine;
 
 public class PlayerBoxBreaker : MonoBehaviour
 {
@@ -33,23 +33,6 @@ public class PlayerBoxBreaker : MonoBehaviour
                 box.Break();
             }
         }
-
-        // Optional debug
-        DebugDrawBox(boxCenter, breakBoxSize, Color.red, 0.2f);
-    }
-
-    void DebugDrawBox(Vector2 center, Vector2 size, Color color, float duration)
-    {
-        Vector2 half = size * 0.5f;
-        Vector2 topLeft = center + new Vector2(-half.x, half.y);
-        Vector2 topRight = center + new Vector2(half.x, half.y);
-        Vector2 bottomLeft = center + new Vector2(-half.x, -half.y);
-        Vector2 bottomRight = center + new Vector2(half.x, -half.y);
-
-        Debug.DrawLine(topLeft, topRight, color, duration);
-        Debug.DrawLine(topRight, bottomRight, color, duration);
-        Debug.DrawLine(bottomRight, bottomLeft, color, duration);
-        Debug.DrawLine(bottomLeft, topLeft, color, duration);
     }
 
 }
