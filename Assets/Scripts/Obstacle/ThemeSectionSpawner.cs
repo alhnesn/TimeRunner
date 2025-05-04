@@ -30,6 +30,17 @@ public class ThemeSectionSpawner : MonoBehaviour
     public float playerViewDistance = 30f; // Oyuncunun önünde section spawn edilecek mesafe
     public float cleanupDistance = 40f; // Oyuncudan bu kadar geride kalan sectionlar temizlenir
 
+    [Header("Tab Cooldown")]
+    public float tabCooldownDuration = 15f;
+    public Image cooldownImage;
+    private float currentCooldown = 0f;
+    private bool canUseTab = true;
+
+    [Header("Portal")]
+    public GameObject portalPrefab;
+    public float portalSpawnDistance = 5f; // Player'ın sağında ne kadar mesafede oluşacak
+    private GameObject activePortal;
+
     private int currentThemeIndex = 0;
     private List<GameObject> currentSections = new List<GameObject>();
     private Vector3 lastSectionEndPosition = Vector3.zero;
@@ -63,25 +74,29 @@ public class ThemeSectionSpawner : MonoBehaviour
             planetNameText.gameObject.SetActive(false);
         }
 
+        // Cooldown UI'ını ayarla
+        if (cooldownImage != null)
+        {
+            cooldownImage.fillAmount = 1f; // Başlangıçta hazır
+        }
+
         SpawnInitialSections();
     }
 
     void Update()
     {
-        // Tab tuşu ile theme değişimi
-        if (Input.GetKeyDown(KeyCode.Tab) && !isTransitioning)
+        // Tab cooldown yönetimi
+        ManageTabCooldown();
+
+        // Tab tuşu ile portal oluşturma
+        if (Input.GetKeyDown(KeyCode.Tab) && canUseTab && !isTransitioning)
         {
-            // Tab'a basıldığında hemen kamerayı ortala
-            if (mainCamera != null)
-            {
-                mainCamera.transform.position = new Vector3(0f, 0f, -10f);
-                // PlayerFollow'u devre dışı bırak
-                if (cameraFollow != null)
-                {
-                    cameraFollow.SetFollowing(false);
-                }
-            }
-            StartCoroutine(ThemeTransition());
+            canUseTab = false;
+            currentCooldown = tabCooldownDuration;
+            UpdateCooldownUI();
+            
+            // Portal oluştur ve oyuncu girişini bekle
+            SpawnPortal();
         }
 
         // Oyuncuya göre yeni sectionların spawn edilmesi
@@ -89,7 +104,192 @@ public class ThemeSectionSpawner : MonoBehaviour
         {
             CheckAndSpawnNewSections();
             CleanupOldSections();
+            CheckPortalInteraction();
         }
+    }
+
+    void ManageTabCooldown()
+    {
+        if (!canUseTab && currentCooldown > 0)
+        {
+            currentCooldown -= Time.deltaTime;
+            UpdateCooldownUI();
+
+            if (currentCooldown <= 0)
+            {
+                canUseTab = true;
+                currentCooldown = 0;
+                UpdateCooldownUI();
+            }
+        }
+    }
+
+    void UpdateCooldownUI()
+    {
+        if (cooldownImage != null)
+        {
+            float fillAmount = 1f - (currentCooldown / tabCooldownDuration);
+            cooldownImage.fillAmount = fillAmount;
+            
+            // Cooldown tamamlandığında rengi değiştir
+            if (fillAmount >= 1f)
+            {
+                cooldownImage.color = Color.white; // Hazır olduğunda beyaz
+            }
+            else
+            {
+                cooldownImage.color = Color.gray; // Hazır olmadığında gri
+            }
+        }
+    }
+
+    void SpawnPortal()
+    {
+        if (portalPrefab != null && player != null)
+        {
+            // Oyuncunun sağ tarafında portal oluştur
+            Vector3 portalPosition = player.position + new Vector3(portalSpawnDistance, 0, 0);
+            
+            // Önceki portalı temizle
+            if (activePortal != null)
+            {
+                Destroy(activePortal);
+            }
+            
+            // Yeni portalı oluştur
+            activePortal = Instantiate(portalPrefab, portalPosition, Quaternion.identity);
+            activePortal.SetActive(true);
+            
+            // Portala animasyon eklenebilir
+            StartCoroutine(PortalAppearEffect(activePortal));
+        }
+    }
+
+    IEnumerator PortalAppearEffect(GameObject portal)
+    {
+        if (portal != null)
+        {
+            // Portal görünüm efekti örneği
+            SpriteRenderer sr = portal.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                sr.color = new Color(1, 1, 1, 0);
+                
+                // Yavaşça görünür hale getir
+                float time = 0;
+                while (time < 1f)
+                {
+                    time += Time.deltaTime * 2f;
+                    sr.color = new Color(1, 1, 1, time);
+                    yield return null;
+                }
+                
+                // Portal efektini vurgulamak için pulsasyon eklenebilir
+                StartCoroutine(PortalPulseEffect(sr));
+            }
+        }
+    }
+
+    IEnumerator PortalPulseEffect(SpriteRenderer sr)
+    {
+        while (sr != null && sr.gameObject.activeSelf)
+        {
+            // Pulsasyon efekti: boyut veya parlaklık değişimi
+            float time = 0;
+            float duration = 1.5f;
+            float startScale = 1f;
+            float peakScale = 1.1f;
+            
+            while (time < duration)
+            {
+                time += Time.deltaTime;
+                float scale = Mathf.Lerp(startScale, peakScale, Mathf.PingPong(time / duration, 1));
+                sr.transform.localScale = new Vector3(scale, scale, 1);
+                yield return null;
+            }
+        }
+    }
+
+    void CheckPortalInteraction()
+    {
+        // This is a fallback method. Portal entry will primarily happen through OnTriggerEnter2D
+        if (activePortal != null && player != null && !isTransitioning)
+        {
+            // Oyuncunun portala temas edip etmediğini kontrol et
+            float distance = Vector2.Distance(player.position, activePortal.transform.position);
+            float interactionRadius = 1.0f; // Etkileşim mesafesi
+            
+            if (distance < interactionRadius)
+            {
+                // Portala giriş başlat
+                StartCoroutine(EnterPortalSequence());
+            }
+        }
+    }
+    
+    // Portala Giriş için Trigger kullanımı
+    public void OnPortalTriggered()
+    {
+        if (!isTransitioning)
+        {
+            StartCoroutine(EnterPortalSequence());
+        }
+    }
+
+    IEnumerator EnterPortalSequence()
+    {
+        isTransitioning = true;
+        
+        // Oyuncuyu portala doğru hareket ettir (opsiyonel)
+        if (player != null && activePortal != null)
+        {
+            // Oyuncuyu portala çekme/yutma animasyonu
+            float time = 0;
+            Vector3 startPos = player.position;
+            Vector3 endPos = activePortal.transform.position;
+            
+            while (time < 0.5f)
+            {
+                time += Time.deltaTime;
+                player.position = Vector3.Lerp(startPos, endPos, time / 0.5f);
+                yield return null;
+            }
+            
+            // Oyuncuyu gizle
+            player.gameObject.SetActive(false);
+        }
+        
+        // Portalı patlama efekti ile yok et
+        if (activePortal != null)
+        {
+            // Portal patlama/kapanma efekti
+            SpriteRenderer sr = activePortal.GetComponent<SpriteRenderer>();
+            if (sr != null)
+            {
+                float time = 0;
+                while (time < 0.5f)
+                {
+                    time += Time.deltaTime * 2f;
+                    sr.color = new Color(1, 1, 1, 1 - time);
+                    activePortal.transform.localScale = Vector3.Lerp(Vector3.one, Vector3.one * 2f, time);
+                    yield return null;
+                }
+            }
+            
+            Destroy(activePortal);
+            activePortal = null;
+        }
+        
+        // Tab tuşu ile theme değişimi
+        mainCamera.transform.position = new Vector3(0f, 0f, -10f);
+        // PlayerFollow'u devre dışı bırak
+        if (cameraFollow != null)
+        {
+            cameraFollow.SetFollowing(false);
+        }
+        
+        // Theme değişikliğini başlat
+        yield return StartCoroutine(ThemeTransition());
     }
 
     void CheckAndSpawnNewSections()
@@ -180,13 +380,10 @@ public class ThemeSectionSpawner : MonoBehaviour
         if (planetNameText != null)
         {
             planetNameText.gameObject.SetActive(false);
-            planetNameText.text = "Arriving at: " + nextTheme.planetName;
+            planetNameText.text = "" + nextTheme.planetName;
         }
         
-        // Oyuncuyu ve sectionları hemen gizle
-        if (player != null)
-            player.gameObject.SetActive(false);
-            
+        // Sectionları hemen gizle
         foreach (var sec in currentSections)
         {
             if (sec != null)
@@ -227,12 +424,20 @@ public class ThemeSectionSpawner : MonoBehaviour
         }
         currentSections.Clear();
         
-        // 5 saniye gezegen görünümünü bekle
+       // 5 saniye gezegen görünümünü bekle
         yield return new WaitForSeconds(5f);
-        
+
+        // UI metni temizle
+        if (planetNameText != null)
+        {
+            planetNameText.text = "";
+            planetNameText.gameObject.SetActive(false);
+        }
+
         // Gezegen objesini gizle
         if (nextTheme.planetObject != null)
             nextTheme.planetObject.SetActive(false);
+
         
         // Yeni theme geçişi
         currentThemeIndex = nextThemeIndex;
