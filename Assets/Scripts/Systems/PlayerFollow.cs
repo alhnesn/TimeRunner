@@ -7,10 +7,11 @@ public class PlayerFollow : MonoBehaviour
     public float smoothTime = 0.3f;    // Takip yumuşaklığı (daha yüksek = daha yavaş, yumuşak)
 
     private Vector3 velocity = Vector3.zero;
+    public bool isFollowingActive = true; // Takip etme aktif mi?
 
     void LateUpdate()
     {
-        if (target == null) return;
+        if (target == null || !isFollowingActive) return;
 
         Vector3 targetPosition = target.position + offset;
 
@@ -18,5 +19,11 @@ public class PlayerFollow : MonoBehaviour
         Vector3 smoothPosition = Vector3.SmoothDamp(transform.position, targetPosition, ref velocity, smoothTime);
 
         transform.position = new Vector3(smoothPosition.x, smoothPosition.y, offset.z); // Z sabitlenir (genellikle -10)
+    }
+
+    // Takip etmeyi açma/kapama fonksiyonu
+    public void SetFollowing(bool active)
+    {
+        isFollowingActive = active;
     }
 }
