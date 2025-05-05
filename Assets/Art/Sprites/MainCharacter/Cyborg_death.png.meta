@@ -118,10 +118,10 @@ TextureImporter:
       name: Cyborg_death_0
       rect:
         serializedVersion: 2
-        x: 2
+        x: 0
         y: 0
-        width: 21
-        height: 36
+        width: 48
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -140,10 +140,10 @@ TextureImporter:
       name: Cyborg_death_1
       rect:
         serializedVersion: 2
-        x: 50
+        x: 48
         y: 0
-        width: 22
-        height: 26
+        width: 48
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -162,10 +162,10 @@ TextureImporter:
       name: Cyborg_death_2
       rect:
         serializedVersion: 2
-        x: 99
+        x: 96
         y: 0
-        width: 23
-        height: 18
+        width: 48
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -184,10 +184,10 @@ TextureImporter:
       name: Cyborg_death_3
       rect:
         serializedVersion: 2
-        x: 147
+        x: 144
         y: 0
-        width: 25
-        height: 14
+        width: 48
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -206,10 +206,10 @@ TextureImporter:
       name: Cyborg_death_4
       rect:
         serializedVersion: 2
-        x: 196
+        x: 192
         y: 0
-        width: 24
-        height: 13
+        width: 48
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -228,10 +228,10 @@ TextureImporter:
       name: Cyborg_death_5
       rect:
         serializedVersion: 2
-        x: 244
+        x: 240
         y: 0
-        width: 24
-        height: 12
+        width: 48
+        height: 35
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -250,7 +250,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 520ce9684be688b42ab27e6094cc20c7
     internalID: 0
     vertices: []
     indices: 
