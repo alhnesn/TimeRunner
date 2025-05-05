@@ -61,6 +61,7 @@ public class PlayerController : MonoBehaviour, IRewindable
     private bool wasGrounded;
     private bool isJumping;
     private bool isFastFalling;
+    private bool isDead = false;
     private int jumpCount;
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
@@ -182,6 +183,41 @@ public class PlayerController : MonoBehaviour, IRewindable
         if (showDebugLogs)
             Debug.Log($"Jump Force: {jumpForce}");
     }
+void OnCollisionEnter2D(Collision2D collision)
+{
+    if (isDead) return;
+
+    if (collision.collider.CompareTag("dieGround"))
+    {
+        Debug.Log("Touched death ground!");
+        
+        isDead = true;
+        Die();
+    }
+}
+
+void Die()
+{
+    // Trigger death animation
+    if (animator != null)
+    {
+       animator.SetBool("isDead", isDead);
+    }
+
+    // Freeze movement (optional)
+    GetComponent<Rigidbody2D>().linearVelocity = Vector2.zero;
+    GetComponent<Rigidbody2D>().gravityScale = 0;
+    GetComponent<PlayerController>().enabled = false; // Or disable movement logic
+    
+
+    // Call ScoreManager after short delay
+    Invoke(nameof(TriggerGameOver), 1f); // Delay to let animation play
+}
+
+void TriggerGameOver()
+{
+    ScoreManagerTMP.I.OnPlayerDeath();
+}
 
     private void Update()
     {

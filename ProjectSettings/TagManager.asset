@@ -10,6 +10,7 @@ TagManager:
   - Ladder
   - Ground
   - Chaser
+  - dieGround
   layers:
   - Default
   - TransparentFX

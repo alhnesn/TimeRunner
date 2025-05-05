@@ -8,6 +8,12 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/SampleScene.unity
     guid: 8c9cfa26abfee488c85f1582747f6a02
+  - enabled: 1
+    path: Assets/Scenes/EyllMain.unity
+    guid: a880f656bb99b2c4a9c1957d44ffd0ae
+  - enabled: 1
+    path: Assets/Scenes/Home.unity
+    guid: c7cb7825cc0361f4eb331a297320846f
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_UseUCBPForAssetBundles: 0
