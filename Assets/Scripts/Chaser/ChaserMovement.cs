@@ -113,6 +113,9 @@ public class ChaserMovement : MonoBehaviour, IRewindable
 
     void Update()
     {
+        float chaseSpeed = SpeedManager.Instance.GetChaserSpeed();
+transform.position += Vector3.right * chaseSpeed * Time.deltaTime;
+
         // Don’t run normal chase logic while rewinding
         if (RewindManager.I.IsRewinding)
             return;

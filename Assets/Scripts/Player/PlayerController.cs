@@ -221,6 +221,11 @@ void TriggerGameOver()
 
     private void Update()
     {
+        float targetSpeed = moveDirection.x * SpeedManager.Instance.GetPlayerSpeed();
+
+
+
+       // transform.position += Vector3.right * moveSpeed * Time.deltaTime;
         // 1) allow R to start/stop rewind
         if (Input.GetKeyDown(KeyCode.R) && RewindManager.I.RewindCharge >= RewindManager.I.RewindLimit)
             RewindManager.I.StartRewind();

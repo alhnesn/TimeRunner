@@ -103,14 +103,17 @@ public AudioClip spaceSound;
 
         // Tab tuşu ile portal oluşturma
         if (Input.GetKeyDown(KeyCode.Tab) && canUseTab && !isTransitioning)
-        {
-            canUseTab = false;
-            currentCooldown = tabCooldownDuration;
-            UpdateCooldownUI();
-            
-            // Portal oluştur ve oyuncu girişini bekle
-            SpawnPortal();
-        }
+{
+    canUseTab = false;
+    currentCooldown = tabCooldownDuration;
+    UpdateCooldownUI();
+
+    // Reduce speed a bit when Tab is used
+    SpeedManager.Instance.ReduceSpeedTemporarily();
+
+    SpawnPortal();
+}
+
 
         // Oyuncuya göre yeni sectionların spawn edilmesi
         if (player != null && !isTransitioning)
