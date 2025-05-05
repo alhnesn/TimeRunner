@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      Bramble_1_16x16_0: -6964311701470244988
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

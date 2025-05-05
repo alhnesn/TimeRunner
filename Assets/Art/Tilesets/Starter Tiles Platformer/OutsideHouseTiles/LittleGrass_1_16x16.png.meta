@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      LittleGrass_1_16x16_0: -2453494611661345373
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      DarkCastle_23_16x16_0: -2988981616097895816
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

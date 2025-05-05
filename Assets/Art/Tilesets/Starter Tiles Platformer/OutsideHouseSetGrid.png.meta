@@ -134,7 +134,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      OutsideHouseSetGrid_0: 6360784117104133271
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
