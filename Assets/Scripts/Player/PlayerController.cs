@@ -186,8 +186,10 @@ public class PlayerController : MonoBehaviour, IRewindable
     private void Update()
     {
         // 1) allow R to start/stop rewind
-        if (Input.GetKeyDown(KeyCode.R)) RewindManager.I.StartRewind();
-        if (Input.GetKeyUp(KeyCode.R)) RewindManager.I.StopRewind();
+        if (Input.GetKeyDown(KeyCode.R) && RewindManager.I.RewindCharge >= RewindManager.I.RewindLimit)
+            RewindManager.I.StartRewind();
+        if (Input.GetKeyUp(KeyCode.R))
+            RewindManager.I.StopRewind();
 
         // 2) if we’re in rewind, don’t do any of the normal gameplay logic
         if (RewindManager.I.IsRewinding)
