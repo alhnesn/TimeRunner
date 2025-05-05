@@ -515,7 +515,7 @@ if (musicSource != null && themes[currentThemeIndex].themeMusic != null)
             }
         }
         
-        // Player'ı yeni konumda göster
+        // Player'ı yeni konumda gösterje
         if (player != null)
         {
             player.position = playerRespawnPosition;
