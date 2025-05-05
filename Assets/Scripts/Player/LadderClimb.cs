@@ -18,6 +18,7 @@ public class LadderClimb : MonoBehaviour
     [SerializeField] private float verticalInput = 0f;
     [Tooltip("Current horizontal input value.")]
     [SerializeField] private float horizontalInput = 0f;
+    private Animator animator;
 
     private Rigidbody2D rb;
     private float originalGravity;
@@ -25,6 +26,7 @@ public class LadderClimb : MonoBehaviour
     void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
         originalGravity = rb.gravityScale;
     }
 
@@ -35,7 +37,11 @@ public class LadderClimb : MonoBehaviour
 
         // Only process climb logic if overlapping at least one ladder collider
         if (ladderContactCount <= 0)
+        {
+            isClimbing = false;
+            animator?.SetBool("isClimbing", false);
             return;
+        }
 
         verticalInput = Input.GetAxisRaw("Vertical");
 
@@ -53,28 +59,20 @@ public class LadderClimb : MonoBehaviour
             // Hold vertical position, allow horizontal movement
             rb.constraints = RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePositionY;
         }
+
+        animator?.SetBool("isClimbing", isClimbing);
     }
 
     void OnTriggerEnter2D(Collider2D other)
     {
         if (other.CompareTag("Ladder"))
-        {
             ladderContactCount++;
-            inClimbZone = ladderContactCount > 0;
-        }
     }
 
     void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Ladder"))
-        {
-            ladderContactCount = Mathf.Max(0, ladderContactCount - 1);
-            inClimbZone = ladderContactCount > 0;
-
-            // Only end climbing when exiting all ladder colliders
-            if (!inClimbZone && isClimbing)
-                EndClimb();
-        }
+        if (other.CompareTag("Ladder") && --ladderContactCount <= 0)
+            EndClimb();
     }
 
     /// <summary>
@@ -84,9 +82,7 @@ public class LadderClimb : MonoBehaviour
     {
         isClimbing = true;
         rb.gravityScale = 0f;
-        // rb.constraints = RigidbodyConstraints2D.FreezeRotation | RigidbodyConstraints2D.FreezePositionY;
         rb.linearVelocity = Vector2.zero;
-        // Only lock rotation, horizontal movement is managed by player
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
     }
 
@@ -97,7 +93,6 @@ public class LadderClimb : MonoBehaviour
     {
         isClimbing = false;
         rb.gravityScale = originalGravity;
-        // Reset constraints to only freeze rotation
         rb.constraints = RigidbodyConstraints2D.FreezeRotation;
     }
 }

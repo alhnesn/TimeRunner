@@ -67,6 +67,8 @@ public class PlayerController : MonoBehaviour, IRewindable
     private bool jumpRequested = false;
     private bool isFacingRight = true;
 
+    private Animator animator;
+
     // private bool hasReleasedJumpButton = true;
 
     private enum LastInput { None, Jump, FastFall }
@@ -167,6 +169,7 @@ public class PlayerController : MonoBehaviour, IRewindable
     private void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        animator = GetComponent<Animator>();
         gravityScale = rb.gravityScale;
         jumpForce = CalculateJumpForce();
 
@@ -198,6 +201,8 @@ public class PlayerController : MonoBehaviour, IRewindable
 
         TryJump();
         ApplyVariableJumpCut();
+
+        UpdateAnimator();
     }
 
     private void FixedUpdate()
@@ -215,6 +220,26 @@ public class PlayerController : MonoBehaviour, IRewindable
         HandleFastFall();
         ApplyGravityModifiers();
     }
+
+    #region Animation
+
+    private void UpdateAnimator()
+    {
+        if (animator == null) return;
+
+        // Running on ground
+        bool isRunning = Mathf.Abs(moveDirection.x) > 0.01f && isGrounded;
+        animator.SetBool("isRunning", isRunning);
+
+        // Ascending jump
+        bool isJumpingAnim = !isGrounded && rb.linearVelocity.y > 0f;
+        animator.SetBool("isJumping", isJumpingAnim);
+
+        // Vertical speed for blend/tree
+        animator.SetFloat("yVelocity", rb.linearVelocity.y);
+    }
+
+    #endregion
 
     private void OnDrawGizmos()
     {
@@ -403,3 +428,4 @@ public class PlayerController : MonoBehaviour, IRewindable
 
     #endregion
 }
+

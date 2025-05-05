@@ -809,7 +809,35 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      desert_demo_objects_0: 417470712464359739
+      desert_demo_objects_1: 6272868889371815816
+      desert_demo_objects_10: -4336282972070734190
+      desert_demo_objects_11: -103898733158270328
+      desert_demo_objects_12: -2665112317286262502
+      desert_demo_objects_13: -7988137572607803129
+      desert_demo_objects_14: -1793453476545151088
+      desert_demo_objects_15: -5141338125679975709
+      desert_demo_objects_16: 6738392144521894414
+      desert_demo_objects_17: 1638366290896844439
+      desert_demo_objects_18: 222571471205863579
+      desert_demo_objects_19: -2310761789137625443
+      desert_demo_objects_2: -2318641659150452195
+      desert_demo_objects_20: -5612466131701655972
+      desert_demo_objects_21: -6191856955625473242
+      desert_demo_objects_22: 1143264608079048339
+      desert_demo_objects_23: -2999803727258141593
+      desert_demo_objects_24: 2262271265099457785
+      desert_demo_objects_25: 321755764514282342
+      desert_demo_objects_26: 2275947003516204882
+      desert_demo_objects_27: 5383482177695798337
+      desert_demo_objects_3: -4390293983262339584
+      desert_demo_objects_4: -6060793574753630791
+      desert_demo_objects_5: -7459917193503237482
+      desert_demo_objects_6: -1855128120805252225
+      desert_demo_objects_7: 6219587212560528515
+      desert_demo_objects_8: 474487314917076962
+      desert_demo_objects_9: 6929747581479453298
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
