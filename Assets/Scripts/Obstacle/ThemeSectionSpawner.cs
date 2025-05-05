@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.Tilemaps;
+using System.Net.Sockets;
 
 public class ThemeSectionSpawner : MonoBehaviour
 {
@@ -16,6 +17,8 @@ public class Theme
     public Sprite backgroundSprite;
     public AudioClip themeMusic;
 }
+
+
 
         
     public Theme[] themes;
@@ -53,6 +56,12 @@ public AudioClip spaceSound;
     public GameObject portalPrefab;
     public float portalSpawnDistance = 5f; // Player'ın sağında ne kadar mesafede oluşacak
     private GameObject activePortal;
+
+    [Header("Projectile Cleanup")]
+    [Tooltip("Your ProjectileSpawner (will be disabled during transition)")]
+    public ProjectileSpawner projectileSpawner;
+    [Tooltip("Tag used on all in-scene projectile instances")]
+    public string projectileTag = "Projectile";
 
     private int currentThemeIndex = 0;
     private List<GameObject> currentSections = new List<GameObject>();
@@ -103,16 +112,16 @@ public AudioClip spaceSound;
 
         // Tab tuşu ile portal oluşturma
         if (Input.GetKeyDown(KeyCode.Tab) && canUseTab && !isTransitioning)
-{
-    canUseTab = false;
-    currentCooldown = tabCooldownDuration;
-    UpdateCooldownUI();
+        {
+            canUseTab = false;
+            currentCooldown = tabCooldownDuration;
+            UpdateCooldownUI();
 
-    // Reduce speed a bit when Tab is used
-    SpeedManager.Instance.ReduceSpeedTemporarily();
+            // Reduce speed a bit when Tab is used
+            SpeedManager.Instance.ReduceSpeedTemporarily();
 
-    SpawnPortal();
-}
+            SpawnPortal();
+        }
 
 
         // Oyuncuya göre yeni sectionların spawn edilmesi
@@ -255,6 +264,14 @@ public AudioClip spaceSound;
     IEnumerator EnterPortalSequence()
     {
         isTransitioning = true;
+        // ───  A) Stop rockets spawning ───────────────────────────
+        if (projectileSpawner != null)
+            projectileSpawner.enabled = false;
+        
+        // ───  B) Destroy all existing rocket instances ───────────
+        var rockets = GameObject.FindGameObjectsWithTag(projectileTag);
+        foreach (var r in rockets)
+        Destroy(r);
 
         ScoreManagerTMP.I.ThemeChangedResetPosition();
 
@@ -529,6 +546,9 @@ if (musicSource != null && themes[currentThemeIndex].themeMusic != null)
             chaser.position=chaserRespawnPosition;
             chaser.gameObject.SetActive(true);
         }
+
+        if (projectileSpawner != null)
+            projectileSpawner.enabled = true;
         // Geçiş tamamlandı
         isTransitioning = false;
     }
