@@ -8,15 +8,26 @@ using UnityEngine.Tilemaps;
 public class ThemeSectionSpawner : MonoBehaviour
 {
     [System.Serializable]
-    public class Theme
-    {
-        public string planetName;
-        public GameObject[] sectionPrefabs;
-        public GameObject planetObject; // Planet objesi sahnede
-    }
+public class Theme
+{
+    public string planetName;
+    public GameObject[] sectionPrefabs;
+    public GameObject planetObject;
+    public Sprite backgroundSprite;
+    public AudioClip themeMusic;
+}
+
         
     public Theme[] themes;
     public Transform sectionParent;
+
+    [Header("Background & Audio")]
+public SpriteRenderer backgroundRenderer; // The renderer to set background sprite
+public AudioSource musicSource;           // Looped background music for sections
+public AudioSource sfxSource;             // One-shot audio for glitch and space sounds
+public AudioClip glitchSound;
+public AudioClip spaceSound;
+
 
     [Header("UI & Glitch")]
     public TextMeshProUGUI planetNameText;
@@ -239,7 +250,9 @@ public class ThemeSectionSpawner : MonoBehaviour
     IEnumerator EnterPortalSequence()
     {
         isTransitioning = true;
-        
+
+        ScoreManagerTMP.I.ThemeChangedResetPosition();
+
         // Oyuncuyu portala doğru hareket ettir (opsiyonel)
         if (player != null && activePortal != null)
         {
@@ -371,6 +384,7 @@ public class ThemeSectionSpawner : MonoBehaviour
     IEnumerator ThemeTransition()
     {
         isTransitioning = true;
+
         
         // Sonraki theme'i belirle
         int nextThemeIndex = (currentThemeIndex + 1) % themes.Length;
@@ -404,6 +418,13 @@ public class ThemeSectionSpawner : MonoBehaviour
         {
             planetNameText.gameObject.SetActive(true);
         }
+        if (sfxSource != null && spaceSound != null)
+{
+    sfxSource.clip = spaceSound;
+    sfxSource.loop = true;
+    sfxSource.Play();
+}
+
         
         // Tüm planet objelerini devre dışı bırak
         foreach (var theme in themes)
@@ -416,16 +437,47 @@ public class ThemeSectionSpawner : MonoBehaviour
         if (nextTheme.planetObject != null)
             nextTheme.planetObject.SetActive(true);
         
-        // Sectionları temizle
-        foreach (var sec in currentSections)
-        {
-            if (sec != null)
-                Destroy(sec);
-        }
-        currentSections.Clear();
-        
+      // Stop theme music
+if (musicSource != null)
+    musicSource.Stop();
+
+// Stop any previous background
+if (backgroundRenderer != null)
+    backgroundRenderer.sprite = null;
+
+// Clear sections
+foreach (var sec in currentSections)
+{
+    if (sec != null)
+        Destroy(sec);
+}
+currentSections.Clear();
+
+        // Yeni theme geçişi
+currentThemeIndex = nextThemeIndex;
+
+// Yeni theme’in arkaplanı
+if (backgroundRenderer != null)
+{
+    backgroundRenderer.sprite = themes[currentThemeIndex].backgroundSprite;
+}
+
+// Yeni theme’in müziği
+if (musicSource != null && themes[currentThemeIndex].themeMusic != null)
+{
+    musicSource.clip = themes[currentThemeIndex].themeMusic;
+    musicSource.loop = true;
+    musicSource.Play();
+}
+
        // 5 saniye gezegen görünümünü bekle
         yield return new WaitForSeconds(5f);
+        if (sfxSource != null && sfxSource.clip == spaceSound)
+{
+    sfxSource.Stop();
+    sfxSource.clip = null;
+}
+
 
         // UI metni temizle
         if (planetNameText != null)
@@ -472,6 +524,13 @@ public class ThemeSectionSpawner : MonoBehaviour
 
     IEnumerator GlitchEffect()
     {
+        if (sfxSource != null && glitchSound != null)
+{
+    sfxSource.clip = glitchSound;
+    sfxSource.loop = true;
+    sfxSource.Play();
+}
+
         if (glitchOverlay == null || glitchColors.Length == 0)
             yield break;
         
@@ -491,5 +550,11 @@ public class ThemeSectionSpawner : MonoBehaviour
         
         glitchOverlay.color = new Color(0, 0, 0, 0); // Tam şeffaf yap
         glitchOverlay.gameObject.SetActive(false);
+        if (sfxSource != null && sfxSource.clip == glitchSound)
+{
+    sfxSource.Stop();
+    sfxSource.clip = null;
+}
+
     }
 }
