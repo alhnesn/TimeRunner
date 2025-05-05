@@ -11,6 +11,8 @@ TagManager:
   - Ground
   - Chaser
   - dieGround
+  - Projectile
+  - Hazard
   layers:
   - Default
   - TransparentFX

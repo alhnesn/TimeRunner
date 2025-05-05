@@ -8,8 +8,6 @@ public class LadderClimb : MonoBehaviour
     public float climbSpeed = 5f;
 
     [Header("Debug")]
-    [Tooltip("Whether the player is currently in any ladder zone.")]
-    [SerializeField] private bool inClimbZone = false;
     [Tooltip("Whether the player is actively climbing.")]
     [SerializeField] private bool isClimbing = false;
     [Tooltip("Number of overlapping ladder colliders.")]
