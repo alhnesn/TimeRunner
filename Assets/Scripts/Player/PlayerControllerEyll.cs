@@ -5,39 +5,24 @@ public class PlayerControllerEyll : MonoBehaviour
     #region Inspector Fields
 
     [Header("Movement")]
-    [Tooltip("Horizontal move speed")]
     public float moveSpeed = 8f;
-    [Tooltip("Ground acceleration rate")]
     public float acceleration = 60f;
-    [Tooltip("Ground deceleration rate")]
     public float deceleration = 60f;
-    [Tooltip("Air acceleration rate")]
     public float airAcceleration = 30f;
-    [Tooltip("Air deceleration rate")]
     public float airDeceleration = 20f;
-    [Range(0f, 1f), Tooltip("Air control multiplier")]
-    public float airControl = 0.8f;
+    [Range(0f, 1f)] public float airControl = 0.8f;
 
     [Header("Jumping")]
-    [Tooltip("Max jump height in units")]
     public float jumpHeight = 1.5f;
-    [Tooltip("Time to reach apex")]
     public float jumpApexTime = 0.4f;
-    [Tooltip("Multiplier for cutting jump short")]
     public float jumpCutMultiplier = 0.5f;
-    [Tooltip("Fall speed multiplier")]
     public float fallMultiplier = 1.5f;
-    [Tooltip("Max number of jumps")]
     public int maxJumps = 2;
-    [Tooltip("Grace period after leaving ground")]
     public float coyoteTime = 0.15f;
-    [Tooltip("Buffer window before landing")]
     public float jumpBufferTime = 0.2f;
 
     [Header("Fast Fall")]
-    [Tooltip("Fast fall gravity multiplier")]
     public float fastFallMultiplier = 2.5f;
-    [Tooltip("Fast fall override velocity")]
     public float fastFallVelocity = -15f;
 
     [Header("Ground Detection")]
@@ -51,12 +36,9 @@ public class PlayerControllerEyll : MonoBehaviour
     #endregion
 
     #region Private Fields
+
     private Animator animator;
-    private bool isClimbing = false;
-
-
-
-    [SerializeField] private Rigidbody2D rb;
+    private Rigidbody2D rb;
     private Vector2 moveDirection;
     private float jumpForce;
     private float gravityScale;
@@ -64,10 +46,12 @@ public class PlayerControllerEyll : MonoBehaviour
     private bool wasGrounded;
     private bool isJumping;
     private bool isFastFalling;
+    private bool isClimbing;
+    private bool isFacingRight = true;
     private int jumpCount;
     private float coyoteTimeCounter;
     private float jumpBufferCounter;
-    private bool hasReleasedJumpButton = true;
+    private bool jumpRequested = false;
 
     private enum LastInput { None, Jump, FastFall }
     private LastInput lastInput = LastInput.None;
@@ -80,15 +64,12 @@ public class PlayerControllerEyll : MonoBehaviour
     {
         rb = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
-
         gravityScale = rb.gravityScale;
         jumpForce = CalculateJumpForce();
 
         jumpCount = 0;
         coyoteTimeCounter = 0f;
         jumpBufferCounter = 0f;
-        isJumping = false;
-        hasReleasedJumpButton = true;
 
         if (showDebugLogs)
             Debug.Log($"Jump Force: {jumpForce}");
@@ -100,39 +81,23 @@ public class PlayerControllerEyll : MonoBehaviour
         CheckGrounded();
         HandleCoyoteTime();
         HandleJumpBuffer();
-
         TryJump();
         ApplyVariableJumpCut();
         UpdateAnimator();
-
     }
-
-private void UpdateAnimator()
-{
-    animator.SetBool("isRunning", Mathf.Abs(moveDirection.x) > 0.01f && isGrounded);
-    animator.SetBool("isJumping", !isGrounded && rb.linearVelocity.y > 0f && !isClimbing);
-    animator.SetFloat("yVelocity", rb.linearVelocity.y);
-    animator.SetBool("isClimbing", isClimbing);
-}
-
 
     private void FixedUpdate()
     {
+        if (jumpRequested)
+        {
+            PerformJump();
+            jumpRequested = false;
+        }
+
         HandleMovement();
         HandleFastFall();
         ApplyGravityModifiers();
-        if (IsTouchingLadder() && Input.GetKey(KeyCode.W))
-{
-    isClimbing = true;
-    rb.gravityScale = 0f;
-    rb.linearVelocity = new Vector2(rb.linearVelocity.x, moveSpeed); // or custom climb speed
-}
-else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
-{
-    isClimbing = false;
-    rb.gravityScale = gravityScale;
-}
-
+        HandleLadderClimb();
     }
 
     private void OnDrawGizmos()
@@ -154,11 +119,9 @@ else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
         {
             lastInput = LastInput.Jump;
             jumpBufferCounter = jumpBufferTime;
-            hasReleasedJumpButton = false;
         }
         if (Input.GetButtonUp("Jump"))
         {
-            hasReleasedJumpButton = true;
             jumpBufferCounter = 0f;
         }
 
@@ -179,12 +142,12 @@ else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
 
         if (!isClimbing && jumpBufferCounter > 0f && (canFirst || canSecond))
         {
-            PerformJump();
+            jumpRequested = true;
             jumpBufferCounter = 0f;
         }
     }
 
-    private void PerformJump() // bunu FixedUpdate'e koymak daha mantikli olabilir ama if it aint broken dont fix it
+    private void PerformJump()
     {
         float force = (jumpCount == 0) ? jumpForce : jumpForce * 0.85f;
         rb.linearVelocity = new Vector2(rb.linearVelocity.x, force);
@@ -211,7 +174,6 @@ else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
         else
             coyoteTimeCounter -= Time.deltaTime;
 
-        // After coyote expires on a fall, consume first jump
         if (!isGrounded && coyoteTimeCounter <= 0f && jumpCount == 0)
         {
             jumpCount = 1;
@@ -226,6 +188,7 @@ else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, rb.linearVelocity.y * jumpCutMultiplier);
             isJumping = false;
+
             if (showDebugLogs)
                 Debug.Log("Jump cut applied");
         }
@@ -233,7 +196,7 @@ else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
 
     #endregion
 
-    #region Movement
+    #region Movement & Climbing
 
     private void HandleMovement()
     {
@@ -253,6 +216,45 @@ else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
         rb.AddForce(Vector2.right * speedDiff * accelRate, ForceMode2D.Force);
         if (Mathf.Abs(rb.linearVelocity.x) > moveSpeed)
             rb.linearVelocity = new Vector2(Mathf.Sign(rb.linearVelocity.x) * moveSpeed, rb.linearVelocity.y);
+
+        if (moveDirection.x > 0 && !isFacingRight)
+            Flip();
+        else if (moveDirection.x < 0 && isFacingRight)
+            Flip();
+    }
+
+    private void Flip()
+    {
+        isFacingRight = !isFacingRight;
+        Vector3 scale = transform.localScale;
+        scale.x *= -1;
+        transform.localScale = scale;
+    }
+
+    private void HandleLadderClimb()
+    {
+        if (IsTouchingLadder() && Input.GetKey(KeyCode.W))
+        {
+            isClimbing = true;
+            rb.gravityScale = 0f;
+            rb.linearVelocity = new Vector2(rb.linearVelocity.x, moveSpeed);
+        }
+        else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
+        {
+            isClimbing = false;
+            rb.gravityScale = gravityScale;
+        }
+    }
+
+    private bool IsTouchingLadder()
+    {
+        Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 0.2f, groundLayer);
+        foreach (var hit in hits)
+        {
+            if (hit.CompareTag("Ladder"))
+                return true;
+        }
+        return false;
     }
 
     #endregion
@@ -271,29 +273,19 @@ else if (!Input.GetKey(KeyCode.W) || !IsTouchingLadder())
     private void ApplyGravityModifiers()
     {
         float gravityMul = 1f;
+
         if (rb.linearVelocity.y < 0f)
             gravityMul = isFastFalling ? fastFallMultiplier : fallMultiplier;
         else if (rb.linearVelocity.y > 0f && !Input.GetButton("Jump"))
             gravityMul = fallMultiplier;
 
-        rb.gravityScale = gravityScale * gravityMul;
+        if (!isClimbing)
+            rb.gravityScale = gravityScale * gravityMul;
     }
 
     #endregion
 
     #region Ground Detection & Utilities
-private bool IsTouchingLadder()
-{
-    Collider2D[] hits = Physics2D.OverlapCircleAll(transform.position, 0.2f, groundLayer);
-    foreach (var hit in hits)
-    {
-        if (hit.CompareTag("Ladder"))
-            return true;
-    }
-    return false;
-}
-
-
 
     private void CheckGrounded()
     {
@@ -304,15 +296,27 @@ private bool IsTouchingLadder()
         {
             jumpCount = 0;
             isJumping = false;
+
             if (showDebugLogs)
                 Debug.Log("Landed, jumpCount reset");
         }
 
-        if (isGrounded != wasGrounded && !isGrounded && !isJumping && showDebugLogs)
+        if (!isGrounded && wasGrounded && showDebugLogs)
             Debug.Log("Walking off edge, coyote started");
     }
 
-    private float CalculateJumpForce() => Mathf.Sqrt(2f * Mathf.Abs(Physics2D.gravity.y) * rb.gravityScale * jumpHeight);
+    private float CalculateJumpForce()
+        => Mathf.Sqrt(2f * Mathf.Abs(Physics2D.gravity.y) * rb.gravityScale * jumpHeight);
+
+    private void UpdateAnimator()
+    {
+        if (animator == null) return;
+
+        animator.SetBool("isRunning", Mathf.Abs(moveDirection.x) > 0.01f && isGrounded);
+        animator.SetBool("isJumping", !isGrounded && rb.linearVelocity.y > 0f && !isClimbing);
+        animator.SetFloat("yVelocity", rb.linearVelocity.y);
+        animator.SetBool("isClimbing", isClimbing);
+    }
 
     #endregion
 }
