@@ -37,7 +37,9 @@ public AudioClip spaceSound;
 
     [Header("Player & Reset")]
     public Transform player;
+    public Transform chaser;
     public Vector2 playerRespawnPosition = new Vector2(-1.37f, -0.46f);
+    public Vector2 chaserRespawnPosition = new Vector2(-6.64f, -0.46f);
     public float playerViewDistance = 30f; // Oyuncunun önünde section spawn edilecek mesafe
     public float cleanupDistance = 40f; // Oyuncudan bu kadar geride kalan sectionlar temizlenir
 
@@ -265,11 +267,13 @@ public AudioClip spaceSound;
             {
                 time += Time.deltaTime;
                 player.position = Vector3.Lerp(startPos, endPos, time / 0.5f);
+                
                 yield return null;
             }
             
             // Oyuncuyu gizle
             player.gameObject.SetActive(false);
+            chaser.gameObject.SetActive(false);
         }
         
         // Portalı patlama efekti ile yok et
@@ -517,7 +521,11 @@ if (musicSource != null && themes[currentThemeIndex].themeMusic != null)
             player.position = playerRespawnPosition;
             player.gameObject.SetActive(true);
         }
-        
+        if (chaser != null)
+        {
+            chaser.position=chaserRespawnPosition;
+            chaser.gameObject.SetActive(true);
+        }
         // Geçiş tamamlandı
         isTransitioning = false;
     }
